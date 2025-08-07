@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>reCAPTCHA + FastAPI</title>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+    <h2>Submit Form with reCAPTCHA</h2>
+    <form action="/verify" method="post">
+        <label>Name:</label><br>
+        <input type="text" name="name" required><br><br>
+        
+        <div class="g-recaptcha" data-sitekey="6Le2cZwrAAAAAGUMixht0Uz6fYYZHLnN_n2-R7NG"></div><br>
+        
+        <input class="thebutton" type="submit" value="Submit">
+    </form>
+</body>
+</html>

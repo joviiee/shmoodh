@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mouse Tracker with CSV Export</title>
+</head>
+<body>
+  <h2>Click the first checkbox to start tracking, second to stop</h2>
+  <div id="container"></div>
+
+  <script>
+    const container = document.getElementById('container');
+    const checkbox1 = document.createElement('input');
+    const checkbox2 = document.createElement('input');
+
+    checkbox1.type = 'checkbox';
+    checkbox2.type = 'checkbox';
+
+    checkbox1.id = 'startBox';
+    checkbox2.id = 'stopBox';
+
+    const label1 = document.createElement('label');
+    label1.innerText = 'Start Tracking';
+    label1.setAttribute('for', 'startBox');
+
+    const label2 = document.createElement('label');
+    label2.innerText = 'Stop Tracking';
+    label2.setAttribute('for', 'stopBox');
+
+    // Random placement
+    checkbox1.style.position = 'absolute';
+    checkbox1.style.left = `${Math.random() * window.innerWidth}px`;
+    checkbox1.style.top = `${Math.random() * window.innerHeight}px`;
+
+    checkbox2.style.position = 'absolute';
+    checkbox2.style.left = `${Math.random() * window.innerWidth}px`;
+    checkbox2.style.top = `${Math.random() * window.innerHeight}px`;
+
+    label1.style.position = 'absolute';
+    label1.style.left = `${parseFloat(checkbox1.style.left) + 25}px`;
+    label1.style.top = checkbox1.style.top;
+
+    label2.style.position = 'absolute';
+    label2.style.left = `${parseFloat(checkbox2.style.left) + 25}px`;
+    label2.style.top = checkbox2.style.top;
+
+    container.appendChild(checkbox1);
+    container.appendChild(label1);
+    container.appendChild(checkbox2);
+    container.appendChild(label2);
+
+    let tracking = false;
+    let intervalId = null;
+    let mouseX = 0, mouseY = 0;
+    const log = [];
+
+    // Track mouse position
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    checkbox1.addEventListener('change', () => {
+      if (checkbox1.checked && !tracking) {
+        tracking = true;
+        log.length = 0;
+        intervalId = setInterval(() => {
+          log.push({ x: mouseX, y: mouseY, timestamp: Date.now() });
+        }, 100); // 10 times per second
+      }
+    });
+
+    checkbox2.addEventListener('change', () => {
+      if (checkbox2.checked && tracking) {
+        tracking = false;
+        clearInterval(intervalId);
+        downloadCSV(log);
+      }
+    });
+
+    function downloadCSV(data) {
+      let csv = 'timestamp,x,y\n';
+      data.forEach(row => {
+        csv += `${row.timestamp},${row.x},${row.y}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'mouse_log.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
