@@ -6,6 +6,9 @@ import random
 from time import sleep
 import matplotlib.pyplot as plt
 
+job_url = "https://www.upwork.com/freelance-jobs/apply/Anamorphic-Video-Creator-Needed_~021945883745462019793"
+main_url = "https://www.upwork.com/nx/find-work/best-matches"
+
 def create_cursor_tracker():
     """Simple red circle cursor tracker"""
     return """
@@ -18,8 +21,8 @@ def create_cursor_tracker():
                 dot.id = 'cursor-dot';
                 Object.assign(dot.style, {
                     position: 'fixed',
-                    width: '8px',
-                    height: '8px',
+                    width: '18px',
+                    height: '18px',
                     backgroundColor: 'black',
                     borderRadius: '50%',
                     pointerEvents: 'none',
@@ -64,7 +67,7 @@ class VisualGhostCursor:
         except Exception as e:
             print(f"Warning: Could not initialize cursor tracker: {e}")
     
-    def move_to(self, x, y):
+    def move_towards(self, x, y):
         """Move cursor with visual tracking"""
         try:
             # Update visual cursor first
@@ -73,7 +76,7 @@ class VisualGhostCursor:
             pass
         
         # Move the actual cursor
-        return self.cursor.move_to(x, y)
+        return self.cursor.move_to({"x":x, "y":y})
     
     def click(self, locator_or_coords, **kwargs):
         """Click with visual feedback"""
@@ -156,7 +159,7 @@ def main():
         
         print("🚀 Navigating to Upwork job page...")
         page.goto(
-            "https://www.upwork.com/freelance-jobs/apply/Anamorphic-Video-Creator-Needed_~021945883745462019793",
+            main_url,
             wait_until="domcontentloaded",
         )
         
@@ -165,7 +168,7 @@ def main():
         cursor = VisualGhostCursor(page, original_cursor)
         
         print("🔍 Looking for search form element...")
-        element = page.locator("#navSearchForm")
+        element = page.locator(".nav-search-autosuggest-input")
         
         if element.count() > 0:
             print(f"✓ Element found: {element}")
@@ -193,7 +196,7 @@ def main():
                 x = random.randint(100, 800)
                 y = random.randint(100, 600)
                 print(f"Moving to position ({x}, {y})...")
-                cursor.move_to(x=x, y=y)
+                cursor.move_towards(x=x, y=y)
                 sleep(0.5)
         except Exception as e:
             print(f"Movement demonstration error: {e}")

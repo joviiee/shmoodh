@@ -6,6 +6,8 @@ import random
 from time import sleep
 import matplotlib.pyplot as plt
 import subprocess
+import json
+import urllib.request
 
 def create_cursor_tracker():
     """Simple red circle cursor tracker"""
@@ -145,35 +147,36 @@ chrome_executable_path = "/usr/bin/google-chrome"  # Replace with your actual Ch
 #     '--no-first-run',
 #     '--no-default-browser-check'
 # ])
-
-with sync_playwright() as p:
-    browser = p.chromium.launch_persistent_context(
-        user_data_dir=user_data_dir,
-        executable_path=chrome_executable_path,
-        headless=False,
-        args=[
-        "--disable-blink-features=AutomationControlled",
-        "--disable-infobars",
-        "--start-maximized",
-        "--no-sandbox",
-        "--disable-dev-shm-usage"
-    ],
-        viewport={"width": 1920, "height": 1080},
-        color_scheme="dark",
-        locale="en-US",
-        timezone_id="America/New_York",
-    )
-
-    init_page = browser.new_page()
-    init_page.goto("https://www.google.com/", wait_until="domcontentloaded")
-
-    sleep(60)
-
-    page = browser.new_page()
+ws_url = json.load(urllib.request.urlopen("http://localhost:9222/json/version"))["webSocketDebuggerUrl"]
 
 # with sync_playwright() as p:
-#     browser = p.chromium.connect_over_cdp("http://localhost:9222")
-#     page = browser.contexts[0].pages[0]
+#     browser = p.chromium.launch_persistent_context(
+#         user_data_dir=user_data_dir,
+#         executable_path=chrome_executable_path,
+#         headless=False,
+#         args=[
+#         "--disable-blink-features=AutomationControlled",
+#         "--disable-infobars",
+#         "--start-maximized",
+#         "--no-sandbox",
+#         "--disable-dev-shm-usage"
+#     ],
+#         viewport={"width": 1920, "height": 1080},
+#         color_scheme="dark",
+#         locale="en-US",
+#         timezone_id="America/New_York",
+#     )
+
+#     init_page = browser.new_page()
+#     init_page.goto("https://www.google.com/", wait_until="domcontentloaded")
+
+#     sleep(60)
+
+#     page = browser.new_page()
+
+with sync_playwright() as p:
+    browser = p.chromium.connect_over_cdp(ws_url)
+    page = browser.contexts[0].pages[0]
 
     page.add_init_script("""
         // Our injection code here
@@ -186,20 +189,28 @@ with sync_playwright() as p:
     """)
 
     original_cursor = create_cursor(page=page)
-    page.goto("https://2captcha.com/demo/cloudflare-turnstile-challenge", wait_until="domcontentloaded",)  # Your local site with captcha
-    sleep(20)
+    page.goto("https://google.com", wait_until="domcontentloaded",)  # Your local site with captcha
+    sleep(2)
 
-    cursor = VisualGhostCursor(page, original_cursor)
+    search_keyword = "upwork"
+
+    google_cursor = VisualGhostCursor(page, original_cursor)
+
+    google_search_locator = page.locator("textarea[title='Search']")
+    google_cursor.click(google_search_locator)
+
+    page.keyboard.type(search_keyword, delay=random.randint(10, 300))
+    page.keyboard.press("Enter")
 
     # Target the iframe containing the checkbox
-    iframe_element = page.frame_locator("iframe[title='Widget containing a Cloudflare security challenge']")
-    location = page.locator("#cf-turnstile")
-    cursor.click(iframe_element.locator(".cb-i"))
-    sleep(60)
+    # iframe_element = page.frame_locator("iframe[title='Widget containing a Cloudflare security challenge']")
+    # location = page.locator("#cf-turnstile")
+    # cursor.click(iframe_element.locator(".cb-i"))
+    # sleep(60)
 
-    print("Clicked iframe with ghost cursor")
+    # print("Clicked iframe with ghost cursor")
 
-    page.wait_for_timeout(30000)
+    # page.wait_for_timeout(30000)
     input("Enter:")
     browser.close()
 
